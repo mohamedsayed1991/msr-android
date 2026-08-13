@@ -146,13 +146,13 @@ class RouterOsApi(
     private fun close() {
         try {
             inputStream?.close()
-        } catch (_: Exception) {}
+        } catch (e: Exception) { /* ignore */ }
         try {
             outputStream?.close()
-        } catch (_: Exception) {}
+        } catch (e: Exception) { /* ignore */ }
         try {
             socket?.close()
-        } catch (_: Exception) {}
+        } catch (e: Exception) { /* ignore */ }
         inputStream = null
         outputStream = null
         socket = null
