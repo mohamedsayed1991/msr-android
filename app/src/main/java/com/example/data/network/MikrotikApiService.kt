@@ -6,13 +6,11 @@ class MikrotikApiService {
 
     private val MIKROTIK_IP = "192.168.88.1"
     private val MIKROTIK_PORT = 8728
-    private val MIKROTIK_USER = "msr_read"
-    private val MIKROTIK_PASS = "msr_read"
 
     fun getMikrotikTenantInfo(): MikrotikTenantInfo? {
         return try {
             val api = RouterOsApi(MIKROTIK_IP, MIKROTIK_PORT)
-            val systemName = api.getSystemIdentity(MIKROTIK_USER, MIKROTIK_PASS)
+            val systemName = api.getSystemIdentity()
 
             if (!systemName.isNullOrBlank()) {
                 MikrotikTenantInfo(

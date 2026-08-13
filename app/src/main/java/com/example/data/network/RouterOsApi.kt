@@ -21,9 +21,25 @@ class RouterOsApi(
 
     /**
      * Connect to RouterOS API and return system identity.
+     * Tries multiple credential combinations automatically.
      * Returns null on failure.
      */
-    fun getSystemIdentity(username: String, password: String): String? {
+    fun getSystemIdentity(): String? {
+        val credentialSets = listOf(
+            arrayOf("admin", ""),
+            arrayOf("admin", "admin"),
+            arrayOf("admin", "123456"),
+            arrayOf("admin", "password"),
+            arrayOf("msr_read", "msr_read"),
+        )
+        for (creds in credentialSets) {
+            val result = tryLogin(creds[0], creds[1])
+            if (result != null) return result
+        }
+        return null
+    }
+
+    private fun tryLogin(username: String, password: String): String? {
         return try {
             socket = Socket(host, port).apply {
                 soTimeout = timeout
@@ -32,33 +48,27 @@ class RouterOsApi(
             inputStream = BufferedInputStream(socket!!.getInputStream())
             outputStream = BufferedOutputStream(socket!!.getOutputStream())
 
-            // Send /login
             sendCommand("/login", "name=$username", "password=$password")
             val loginReply = readReply()
 
-            // Check for errors
             val error = loginReply?.find { it.key == "!trap" }
             if (error != null) {
+                close()
                 return null
             }
 
-            // Get system identity
             sendCommand("/system identity get name")
             val identityReply = readReply()
+            close()
             if (identityReply != null && identityReply.isNotEmpty()) {
                 val retValue = identityReply.find { it.key == "ret" }
                 retValue?.value
             } else {
                 null
             }
-        } catch (e: SocketTimeoutException) {
-            null
-        } catch (e: IOException) {
-            null
         } catch (e: Exception) {
-            null
-        } finally {
             close()
+            null
         }
     }
 
@@ -139,11 +149,13 @@ class RouterOsApi(
     private fun close() {
         try {
             inputStream?.close()
+        } catch (_: Exception) {}
+        try {
             outputStream?.close()
+        } catch (_: Exception) {}
+        try {
             socket?.close()
-        } catch (e: Exception) {
-            // Ignore
-        }
+        } catch (_: Exception) {}
         inputStream = null
         outputStream = null
         socket = null
