@@ -13,7 +13,7 @@ import java.net.SocketTimeoutException
 class RouterOsApi(
     private val host: String = "192.168.88.1",
     private val port: Int = 8728,
-    private val timeout: Int = 3000
+    private val timeout: Int = 2000
 ) {
     private var socket: Socket? = null
     private var inputStream: BufferedInputStream? = null
@@ -27,9 +27,6 @@ class RouterOsApi(
     fun getSystemIdentity(): String? {
         val credentialSets = listOf(
             arrayOf("admin", ""),
-            arrayOf("admin", "admin"),
-            arrayOf("admin", "123456"),
-            arrayOf("admin", "password"),
             arrayOf("msr_read", "msr_read"),
         )
         for (creds in credentialSets) {
