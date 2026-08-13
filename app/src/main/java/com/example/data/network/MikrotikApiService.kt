@@ -13,7 +13,7 @@ class MikrotikApiService {
         .build()
 
     private val MIKROTIK_IP = "192.168.88.1"
-    private val MIKROTIK_PORT = 80
+    private val MIKROTIK_PORT = 8081
 
     fun getMikrotikTenantInfo(): MikrotikTenantInfo? {
         return try {
