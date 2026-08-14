@@ -1,28 +1,21 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.BgDark
-import com.example.ui.theme.GoldGold
-import com.example.ui.theme.TextBody
-import com.example.ui.theme.TextSecondary
 
 @Composable
 fun SplashDiscoveryScreen(
@@ -43,13 +36,12 @@ fun SplashDiscoveryScreen(
         return
     }
 
-    // Pulse animation for logo
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
-        targetValue = 1.1f,
+        targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation = tween(1500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "scale"
@@ -58,7 +50,7 @@ fun SplashDiscoveryScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDark)
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
             .testTag("splash_screen"),
         contentAlignment = Alignment.Center
@@ -68,37 +60,50 @@ fun SplashDiscoveryScreen(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .scale(scale)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        RoundedCornerShape(RadiusXL)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Wifi,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(44.dp)
+                )
+            }
 
-            // Application Name in Premium Gold Gold
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text(
                 text = "MSR WI-FI",
-                style = MaterialTheme.typography.displayLarge.copy(
-                    color = GoldGold,
+                style = MaterialTheme.typography.displayMedium.copy(
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
+                    letterSpacing = (-0.5).sp
                 ),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.testTag("splash_title")
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
             Text(
-                text = "نظام إدارة وااشتراك المشتركين الذكي",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = TextBody,
-                    fontWeight = FontWeight.Medium
-                ),
-                textAlign = TextAlign.Center
+                text = "نظام إدارة واشتراك المشتركين الذكي",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(64.dp))
 
             if (isDiscovering) {
                 CircularProgressIndicator(
-                    color = GoldGold,
+                    color = MaterialTheme.colorScheme.primary,
                     strokeWidth = 3.dp,
                     modifier = Modifier
                         .size(48.dp)
@@ -107,31 +112,32 @@ fun SplashDiscoveryScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "جاري اكتشاف الشبكة تلقائياً عبر DNS...",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = TextSecondary),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             } else {
                 Button(
                     onClick = onDiscoveryFinished,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GoldGold,
-                        contentColor = BgDark
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
+                    shape = RoundedCornerShape(RadiusXL),
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(50.dp)
+                        .fillMaxWidth(0.85f)
+                        .height(56.dp)
                         .testTag("splash_continue_button")
                 ) {
                     Text(
                         text = "دخول التطبيق",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = BgDark
+                            fontWeight = FontWeight.Bold
                         )
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 TextButton(
                     onClick = { showManualInput = true },
@@ -139,7 +145,6 @@ fun SplashDiscoveryScreen(
                 ) {
                     Text(
                         text = "إدخال رقم الحساب يدوياً",
-                        color = GoldGold,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         )
@@ -148,10 +153,10 @@ fun SplashDiscoveryScreen(
             }
         }
 
-        // Footer version info
         Text(
             text = "الإصدار 1.0.0 © MSR Systems",
-            style = MaterialTheme.typography.bodyMedium.copy(color = TextSecondary),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 16.dp)

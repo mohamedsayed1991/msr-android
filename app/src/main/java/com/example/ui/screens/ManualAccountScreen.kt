@@ -27,7 +27,7 @@ fun ManualAccountScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDark)
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(24.dp)
             .testTag("manual_account_screen")
@@ -39,7 +39,7 @@ fun ManualAccountScreen(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "رجوع",
-                tint = GoldGold
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -50,31 +50,39 @@ fun ManualAccountScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Lan,
-                contentDescription = null,
-                tint = GoldGold,
-                modifier = Modifier.size(64.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        RoundedCornerShape(RadiusXL)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lan,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 text = "تعذر اكتشاف الشبكة تلقائياً",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    color = TextPrimary,
+                style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "أدخل رقم الحساب (مثال: 164_1491)",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = TextSecondary
-                ),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -83,20 +91,19 @@ fun ManualAccountScreen(
             OutlinedTextField(
                 value = accountId,
                 onValueChange = { accountId = it },
-                placeholder = { Text("164_1491", color = TextSecondary.copy(alpha = 0.5f)) },
+                placeholder = { Text("164_1491") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("manual_account_input"),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = GoldGold,
-                    unfocusedBorderColor = GoldGold.copy(alpha = 0.3f),
-                    focusedContainerColor = CardDark,
-                    unfocusedContainerColor = CardDark,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 ),
-                shape = RoundedCornerShape(RadiusMD)
+                shape = RoundedCornerShape(RadiusLG)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -105,16 +112,16 @@ fun ManualAccountScreen(
                 onClick = { onSubmit(accountId) },
                 enabled = accountId.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = GoldGold,
-                    contentColor = BgDark,
-                    disabledContainerColor = GoldGold.copy(alpha = 0.3f),
-                    disabledContentColor = BgDark.copy(alpha = 0.5f)
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(56.dp)
                     .testTag("manual_account_submit_button"),
-                shape = RoundedCornerShape(RadiusMD)
+                shape = RoundedCornerShape(RadiusLG)
             ) {
                 Text(
                     text = "متابعة",

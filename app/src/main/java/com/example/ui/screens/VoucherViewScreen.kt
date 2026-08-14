@@ -1,20 +1,16 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,195 +24,201 @@ fun VoucherViewScreen(
     voucher: VoucherInfoResponse?,
     onBack: () -> Unit
 ) {
+    val currentVoucher = voucher ?: VoucherInfoResponse(
+        code = "N/A",
+        status = "expired",
+        validityDays = "منتهي",
+        totalGb = 0.0,
+        usedGb = 0.0,
+        remainingGb = 0.0
+    )
+
+    val isExpired = currentVoucher.status == "expired" || currentVoucher.validityDays?.contains("منتهي") == true
+    val statusIcon = if (isExpired) Icons.Default.Cancel else Icons.Default.CheckCircle
+    val statusColor = if (isExpired) ErrorRed else SuccessGreen
+    val statusText = if (isExpired) "الكارت منتهي الصلاحية" else "الكارت مستخدم ونشط"
+
+    val total = currentVoucher.totalGb ?: 0.0
+    val used = currentVoucher.usedGb ?: 0.0
+    val rem = (total - used).coerceAtLeast(0.0)
+    val ratio = if (total > 0) (used / total).toFloat().coerceIn(0f, 1f) else 0f
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "بيانات تفاصيل الكارت",
+                        text = "بيانات الكارت",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = GoldGold
+                            fontWeight = FontWeight.Bold
                         )
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("voucher_back_button")) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع", tint = GoldGold)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
-        containerColor = BgDark,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize().testTag("voucher_view_screen")
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(BgDark)
-                .padding(24.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val currentVoucher = voucher ?: VoucherInfoResponse(
-                code = "N/A",
-                status = "expired",
-                validityDays = "منتهي",
-                totalGb = 0.0,
-                usedGb = 0.0,
-                remainingGb = 0.0
-            )
-
-            // Main Status Display Icon
-            val isExpired = currentVoucher.status == "expired" || currentVoucher.validityDays?.contains("منتهي") == true
-            val statusIcon = if (isExpired) Icons.Default.Cancel else Icons.Default.CheckCircle
-            val statusColor = if (isExpired) ErrorRed else SuccessGreen
-            val statusText = if (isExpired) "الكارت منتهي الصلاحية" else "الكارت مستخدم ونشط"
-
-            Icon(
-                imageVector = statusIcon,
-                contentDescription = null,
-                tint = statusColor,
+            // Status Icon
+            Box(
                 modifier = Modifier
-                    .size(72.dp)
-                    .padding(bottom = 12.dp)
-            )
+                    .size(80.dp)
+                    .background(statusColor.copy(alpha = 0.1f), RoundedCornerShape(RadiusXL)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = statusIcon,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
 
             Text(
                 text = statusText,
-                style = MaterialTheme.typography.titleMedium.copy(
+                style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = statusColor,
-                    fontSize = 20.sp
-                ),
-                textAlign = TextAlign.Center
+                    color = statusColor
+                )
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Premium Voucher Card Layout
+            // Voucher Info Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = CardDark),
-                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(RadiusXL),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(2.dp, GoldGold, RoundedCornerShape(24.dp))
                     .testTag("voucher_info_card")
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header label
                     Text(
-                        text = "رمز كود الكارت المفحوص",
-                        style = MaterialTheme.typography.bodySmall.copy(color = TextSecondary),
-                        textAlign = TextAlign.Center
+                        text = "رمز الكارت",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = currentVoucher.code ?: "رمز غير معروف",
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            color = GoldGold,
+                        text = currentVoucher.code ?: "غير معروف",
+                        style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.Black,
-                            fontSize = 28.sp,
                             letterSpacing = 1.sp
                         ),
-                        textAlign = TextAlign.Center,
                         modifier = Modifier.testTag("voucher_code_display")
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
-                    Divider(color = GoldGold.copy(alpha = 0.15f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Progress metrics
-                    val total = currentVoucher.totalGb ?: 0.0
-                    val used = currentVoucher.usedGb ?: 0.0
-                    val rem = (total - used).coerceAtLeast(0.0)
-                    val ratio = if (total > 0) (used / total).toFloat().coerceIn(0f, 1f) else 0f
-
-                    // Horizontal Progress Bar
+                    // Progress
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "معدل استهلاك البيانات كارت",
-                            style = MaterialTheme.typography.bodySmall.copy(color = TextSecondary, fontWeight = FontWeight.Bold)
+                            text = "معدل الاستهلاك",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = String.format("%.1f%% مستهلك", ratio * 100),
-                            style = MaterialTheme.typography.bodySmall.copy(color = TextSecondary)
+                            text = String.format("%.1f%%", ratio * 100),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     LinearProgressIndicator(
-                        progress = ratio,
-                        color = GoldGold,
-                        trackColor = GoldGold.copy(alpha = 0.15f),
+                        progress = { ratio },
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(10.dp)
-                            .clip(CircleShape)
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Metrics Rows
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         StatRow(label = "صلاحية الكارت", value = calculateRemainingDays(currentVoucher.validityDays))
-                        StatRow(label = "إجمالي سعة الباقة", value = formatArabicDataSize(total))
-                        StatRow(label = "حجم التحميل المستخدم", value = formatArabicDataSize(used))
-                        StatRow(label = "الرصيد المتبقي المتاح", value = formatArabicDataSize(rem), isHighlight = true)
+                        StatRow(label = "إجمالي السعة", value = formatArabicDataSize(total))
+                        StatRow(label = "الحجم المستخدم", value = formatArabicDataSize(used))
+                        StatRow(label = "الرصيد المتبقّي", value = formatArabicDataSize(rem), isHighlight = true)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
-            // Action button back
             Button(
                 onClick = onBack,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = GoldGold,
-                    contentColor = BgDark
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(RadiusXL),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(56.dp)
                     .testTag("voucher_back_to_login_button")
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "العودة لشاشة الدخول",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = BgDark
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        tint = BgDark
-                    )
-                }
+                Text("العودة للشاشة السابقة", fontWeight = FontWeight.Bold)
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+}
+
+@Composable
+fun StatRow(label: String, value: String, isHighlight: Boolean = false) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = if (isHighlight) FontWeight.Bold else FontWeight.Medium
+            ),
+            color = if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+        )
     }
 }

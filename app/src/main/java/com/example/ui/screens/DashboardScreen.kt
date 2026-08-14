@@ -1,7 +1,5 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
@@ -31,9 +27,6 @@ import androidx.compose.ui.unit.sp
 import com.example.config.AppConfig
 import com.example.data.model.SubscriberInfo
 import com.example.ui.theme.*
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Calendar
 import java.util.Locale
 
 fun calculateRemainingDays(validityDaysStr: String?): String {
@@ -76,7 +69,7 @@ fun PremiumPlanCard(
             .fillMaxWidth()
             .testTag(testTag),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(RadiusXL)
     ) {
         Box(
             modifier = Modifier
@@ -84,19 +77,15 @@ fun PremiumPlanCard(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // Subtle decorative background circle
             Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(100.dp)
                     .align(Alignment.TopEnd)
-                    .offset(x = 30.dp, y = (-30).dp)
-                    .background(Color.White.copy(alpha = 0.08f), shape = CircleShape)
+                    .offset(x = 20.dp, y = (-20).dp)
+                    .background(Color.White.copy(alpha = 0.06f), shape = CircleShape)
             )
 
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Badge and Validity row
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,44 +93,39 @@ fun PremiumPlanCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White.copy(alpha = 0.22f))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .clip(RoundedCornerShape(RadiusSM))
+                            .background(Color.White.copy(alpha = 0.2f))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = badgeText,
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            style = MaterialTheme.typography.labelSmall.copy(
                                 color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
+                                fontWeight = FontWeight.Bold
                             )
                         )
                     }
                     Text(
                         text = validityText,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 12.sp
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // Plan Name
                 Text(
                     text = planName,
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 19.sp
+                        fontWeight = FontWeight.Bold
                     )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // Numbers layout (Arabic RTL friendly, where the text flows logically)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -153,58 +137,114 @@ fun PremiumPlanCard(
                     ) {
                         Text(
                             text = String.format(Locale.US, "%.1f", remainingGb),
-                            style = MaterialTheme.typography.headlineLarge.copy(
+                            style = MaterialTheme.typography.displayMedium.copy(
                                 color = Color.White,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 32.sp
+                                fontSize = 28.sp
                             )
                         )
                         Text(
                             text = "جيجابايت متبقية",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 13.sp
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color.White.copy(alpha = 0.75f)
                             ),
-                            modifier = Modifier.padding(bottom = 6.dp)
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
                     }
-                    
                     Text(
                         text = "من أصل ${formatQuotaValue(totalGb)} جيجا",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.White.copy(alpha = 0.75f),
-                            fontSize = 12.sp
+                            color = Color.White.copy(alpha = 0.7f)
                         ),
-                        modifier = Modifier.padding(bottom = 6.dp)
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Progress Bar
                 LinearProgressIndicator(
                     progress = { progress },
                     color = Color.White,
-                    trackColor = Color.White.copy(alpha = 0.2f),
+                    trackColor = Color.White.copy(alpha = 0.15f),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(CircleShape)
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Percentage Indicator
                 Text(
                     text = "${(progress * 100).toInt()}% متوفر",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontWeight = FontWeight.Bold
                     ),
                     modifier = Modifier.align(Alignment.End)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun DashboardActionButton(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+    tag: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(tag),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(RadiusXL)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(RadiusMD))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ChevronLeft,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
@@ -248,10 +288,9 @@ fun DashboardScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "MSR Online",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = GoldGold
+                            text = "MSR WI-FI",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold
                             )
                         )
                         Box(
@@ -263,44 +302,40 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = onToggleTheme,
-                        modifier = Modifier.testTag("theme_toggle_button")
-                    ) {
-                        val themeIcon = if (themeMode == 2) {
-                            Icons.Default.WbSunny
-                        } else {
-                            Icons.Default.NightsStay
-                        }
-                        Icon(imageVector = themeIcon, contentDescription = "تبديل المظهر", tint = GoldGold)
+                    IconButton(onClick = onToggleTheme, modifier = Modifier.testTag("theme_toggle_button")) {
+                        Icon(
+                            imageVector = if (themeMode == 2) Icons.Default.WbSunny else Icons.Default.NightsStay,
+                            contentDescription = "تبديل المظهر",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    IconButton(
-                        onClick = onRefresh,
-                        modifier = Modifier.testTag("refresh_button")
-                    ) {
-                        Icon(imageVector = Icons.Default.Refresh, contentDescription = "تحديث", tint = GoldGold)
+                    IconButton(onClick = onRefresh, modifier = Modifier.testTag("refresh_button")) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "تحديث",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    IconButton(
-                        onClick = onLogout,
-                        modifier = Modifier.testTag("logout_button")
-                    ) {
-                        Icon(imageVector = Icons.Default.Logout, contentDescription = "خروج", tint = Color.Red)
+                    IconButton(onClick = onLogout, modifier = Modifier.testTag("logout_button")) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "خروج",
+                            tint = ErrorRed
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BgDark,
-                    titleContentColor = GoldGold
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = BgDark,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize().testTag("dashboard_screen")
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(BgDark)
         ) {
             val currentSub = subscriber ?: SubscriberInfo(
                 fullName = "مستخدم افتراضي",
@@ -311,148 +346,120 @@ fun DashboardScreen(
 
             if (isLoading && subscriber == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = GoldGold)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else {
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // 1. Part 1: Glassmorphism Top Balance Card (رصيد الحساب)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0x22FFFFFF),
-                                        Color(0x0AFFFFFF)
-                                    )
-                                )
-                            )
-                            .border(1.dp, GoldGold.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
-                            .padding(20.dp)
+                    // Balance Card
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(RadiusXL)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.Start
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp)
                         ) {
                             if (isOnline) {
                                 val welcomeName = currentSub.displayFullName.ifBlank { currentSub.displayUsername }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Start
-                                ) {
-                                    Text(
-                                        text = "مرحباً يا $welcomeName 👋",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = TextBody
-                                        ),
-                                        textAlign = TextAlign.Start
+                                Text(
+                                    text = "مرحباً يا $welcomeName",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                                     )
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                HorizontalDivider(color = GoldGold.copy(alpha = 0.15f), thickness = 1.dp)
+                                )
                                 Spacer(modifier = Modifier.height(12.dp))
                             }
 
-                            val balance = currentSub.displayBalance
-                            val balanceColor = if (balance < 0) Color.Red else GoldGold
-                            
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "💰 الرصيد المتوفر :",
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        color = TextBody,
-                                        fontWeight = FontWeight.Bold
+                                    text = "الرصيد المتوفر",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                                     )
                                 )
+                                val balance = currentSub.displayBalance
+                                val balanceColor = if (balance < 0) Color.White else MaterialTheme.colorScheme.onPrimary
                                 Text(
-                                    text = com.example.config.AppConfig.formatPriceWithCurrency(balance),
-                                    style = MaterialTheme.typography.displayLarge.copy(
+                                    text = AppConfig.formatPriceWithCurrency(balance),
+                                    style = MaterialTheme.typography.headlineLarge.copy(
                                         color = balanceColor,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 28.sp
+                                        fontWeight = FontWeight.Black
                                     ),
                                     modifier = Modifier.testTag("balance_text")
                                 )
                             }
-                            
-                            if (balance < 0) {
-                                Spacer(modifier = Modifier.height(6.dp))
+
+                            if ((currentSub.displayBalance) < 0) {
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = "تنبيه: حسابك مدين حالياً، يرجى الشحن لتفادي قطع الخدمة.",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Color.Red),
-                                    textAlign = TextAlign.Start,
-                                    modifier = Modifier.fillMaxWidth()
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                                    )
                                 )
                             }
                         }
                     }
 
+                    // Outstanding Debt
                     val outstandingDebt = currentSub.displayOutstandingDebt
                     if (outstandingDebt > 0) {
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = Color(0x1AEF5350)),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, Color(0xFFEF5350).copy(alpha = 0.35f), RoundedCornerShape(16.dp))
-                                .testTag("outstanding_debt_card")
+                            colors = CardDefaults.cardColors(
+                                containerColor = ErrorRed.copy(alpha = 0.1f)
+                            ),
+                            shape = RoundedCornerShape(RadiusXL)
                         ) {
-                            Column(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Warning,
-                                            contentDescription = "تحذير المديونية",
-                                            tint = Color(0xFFEF5350)
-                                        )
-                                        Text(
-                                            text = "المديونية المستحقة",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                color = Color(0xFFEF5350),
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = null,
+                                        tint = ErrorRed
+                                    )
                                     Text(
-                                        text = com.example.config.AppConfig.formatPriceWithCurrency(outstandingDebt),
-                                        style = MaterialTheme.typography.headlineSmall.copy(
-                                            color = Color(0xFFEF5350),
-                                            fontWeight = FontWeight.Black
-                                        ),
-                                        modifier = Modifier.testTag("outstanding_debt_text")
+                                        text = "المديونية المستحقة",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = ErrorRed,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     )
                                 }
+                                Text(
+                                    text = AppConfig.formatPriceWithCurrency(outstandingDebt),
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        color = ErrorRed,
+                                        fontWeight = FontWeight.Black
+                                    ),
+                                    modifier = Modifier.testTag("outstanding_debt_text")
+                                )
                             }
                         }
                     }
 
-                    // 2. Part 2: Middle Section Active Plan Card (حاوية الباقة الحالية)
+                    // Active Plan Cards
                     val activePlan = currentSub.activePlan
                     if (activePlan != null) {
                         val hasAddon = activePlan.hasAddon == true
@@ -477,7 +484,6 @@ fun DashboardScreen(
                         val progressBasic = if (basicQuota > 0.0) (remainingBasicGb / basicQuota).toFloat().coerceIn(0f, 1f) else 0f
                         val progressAddon = if (addonQuota > 0.0) (remainingAddonGb / addonQuota).toFloat().coerceIn(0f, 1f) else 0f
 
-                        // 💳 Basic Plan Card
                         PremiumPlanCard(
                             badgeText = "الباقة الشهرية",
                             planName = activePlan.planName ?: activePlan.name ?: "الباقة النشطة",
@@ -485,11 +491,12 @@ fun DashboardScreen(
                             totalGb = basicQuota,
                             progress = progressBasic,
                             validityText = activePlan.validityDays ?: "نشطة",
-                            gradient = Brush.linearGradient(colors = listOf(Color(0xFF8E5A35), Color(0xFFD48858))),
+                            gradient = Brush.linearGradient(
+                                colors = listOf(GradientPurple, GradientPink)
+                            ),
                             testTag = "basic_plan_card"
                         )
 
-                        // 💳 Addon Plan Card (if active)
                         if (hasAddon && addonQuota > 0.0) {
                             PremiumPlanCard(
                                 badgeText = "الباقة الإضافية",
@@ -498,134 +505,105 @@ fun DashboardScreen(
                                 totalGb = addonQuota,
                                 progress = progressAddon,
                                 validityText = "تنتهي مع الأساسية",
-                                gradient = Brush.linearGradient(colors = listOf(Color(0xFF423B36), Color(0xFF8C7969))),
+                                gradient = Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.secondary,
+                                        MaterialTheme.colorScheme.tertiary
+                                    )
+                                ),
                                 testTag = "addon_plan_card"
                             )
                         }
 
-                        // ⚙️ Action Buttons Card Container
+                        // Action Buttons
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("action_buttons_card"),
-                            colors = CardDefaults.cardColors(containerColor = CardDark),
-                            shape = RoundedCornerShape(24.dp)
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            shape = RoundedCornerShape(RadiusXL)
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                // Top Row: Add-on Package button (Full width) - Check sub_show_addons
                                 if (currentSub.showAddons) {
-                                    Button(
+                                    OutlinedButton(
                                         onClick = {
                                             onLoadAddons()
                                             showAddonsSheet = true
                                         },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Transparent,
-                                            contentColor = GoldGold
-                                        ),
-                                        border = BorderStroke(1.5.dp, GoldGold),
-                                        shape = RoundedCornerShape(12.dp),
+                                        shape = RoundedCornerShape(RadiusMD),
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(48.dp)
-                                            .testTag("extra_plan_button")
+                                            .testTag("extra_plan_button"),
+                                        border = ButtonDefaults.outlinedButtonBorder
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text("باقة إضافية", fontWeight = FontWeight.Bold)
-                                        }
+                                        Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("باقة إضافية", fontWeight = FontWeight.Bold)
                                     }
                                 }
 
-                                // Bottom Row: Renew Plan and Change Plan side-by-side
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Renew Plan Button (sub_allow_renew)
                                     val renewEnabled = currentSub.allowRenew
-                                    Button(
+                                    OutlinedButton(
                                         onClick = {
-                                            if (!renewEnabled) return@Button
+                                            if (!renewEnabled) return@OutlinedButton
                                             if (!isExpired) {
-                                                android.widget.Toast.makeText(context, "⚠️ الباقة الحالية لا تزال نشطة وبها صلاحية وجيجات متبقية. لا يمكنك التجديد الآن.", android.widget.Toast.LENGTH_LONG).show()
+                                                android.widget.Toast.makeText(context, "الباقة الحالية لا تزال نشطة. لا يمكنك التجديد الآن.", android.widget.Toast.LENGTH_LONG).show()
                                             } else {
                                                 showRenewConfirmation = true
                                             }
                                         },
                                         enabled = renewEnabled,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Transparent,
-                                            contentColor = if (isExpired && renewEnabled) GoldGold else Color.White,
-                                            disabledContainerColor = Color.Transparent,
-                                            disabledContentColor = Color.Gray
-                                        ),
-                                        border = BorderStroke(1.5.dp, if (isExpired && renewEnabled) GoldGold else Color.White.copy(alpha = if (renewEnabled) 0.4f else 0.15f)),
-                                        shape = RoundedCornerShape(12.dp),
+                                        shape = RoundedCornerShape(RadiusMD),
                                         modifier = Modifier
                                             .weight(1f)
                                             .height(48.dp)
-                                            .testTag("renew_plan_button")
+                                            .testTag("renew_plan_button"),
+                                        border = ButtonDefaults.outlinedButtonBorder
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Icon(imageVector = Icons.Default.Autorenew, contentDescription = null, modifier = Modifier.size(18.dp))
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text("تجديد الباقة", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
-                                        }
+                                        Icon(imageVector = Icons.Default.Autorenew, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("تجديد", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
                                     }
 
-                                    // Change Plan Button (sub_allow_change)
                                     val changeEnabled = currentSub.allowChange && currentSub.showPlans
-                                    Button(
+                                    OutlinedButton(
                                         onClick = {
-                                            if (!changeEnabled) return@Button
+                                            if (!changeEnabled) return@OutlinedButton
                                             if (!isExpired) {
-                                                android.widget.Toast.makeText(context, "⚠️ لا يمكنك تغيير الباقة الحالية إلا بعد انتهاء الجيجات أو صلاحية الوقت.", android.widget.Toast.LENGTH_LONG).show()
+                                                android.widget.Toast.makeText(context, "لا يمكنك تغيير الباقة إلا بعد انتهائها.", android.widget.Toast.LENGTH_LONG).show()
                                             } else {
                                                 onChangePlanClick()
                                             }
                                         },
                                         enabled = changeEnabled,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Transparent,
-                                            contentColor = if (isExpired && changeEnabled) GoldGold else Color.White,
-                                            disabledContainerColor = Color.Transparent,
-                                            disabledContentColor = Color.Gray
-                                        ),
-                                        border = BorderStroke(1.5.dp, if (isExpired && changeEnabled) GoldGold else Color.White.copy(alpha = if (changeEnabled) 0.4f else 0.15f)),
-                                        shape = RoundedCornerShape(12.dp),
+                                        shape = RoundedCornerShape(RadiusMD),
                                         modifier = Modifier
                                             .weight(1f)
                                             .height(48.dp)
-                                            .testTag("change_plan_button")
+                                            .testTag("change_plan_button"),
+                                        border = ButtonDefaults.outlinedButtonBorder
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Icon(imageVector = Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(18.dp))
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text("تغيير الباقة", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
-                                        }
+                                        Icon(imageVector = Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("تغيير", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
                                     }
                                 }
                             }
                         }
 
-                        // 2.5 Simplified Plan Action Success Dialog
+                        // Plan Success Dialog
                         planSuccessDialog?.let { successInfo ->
                             AlertDialog(
                                 onDismissRequest = onDismissSuccessDialog,
@@ -638,12 +616,11 @@ fun DashboardScreen(
                                             imageVector = Icons.Default.CheckCircle,
                                             contentDescription = null,
                                             tint = SuccessGreen,
-                                            modifier = Modifier.size(72.dp)
+                                            modifier = Modifier.size(64.dp)
                                         )
-                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Spacer(modifier = Modifier.height(12.dp))
                                         Text(
                                             text = successInfo.message,
-                                            color = GoldGold,
                                             fontWeight = FontWeight.Bold,
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.titleMedium
@@ -653,15 +630,18 @@ fun DashboardScreen(
                                 confirmButton = {
                                     Button(
                                         onClick = onDismissSuccessDialog,
-                                        colors = ButtonDefaults.buttonColors(containerColor = GoldGold, contentColor = BgDark),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                        ),
                                         modifier = Modifier.fillMaxWidth().height(48.dp),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(RadiusMD)
                                     ) {
-                                        Text("موافق", color = BgDark, fontWeight = FontWeight.Bold)
+                                        Text("موافق", fontWeight = FontWeight.Bold)
                                     }
                                 },
-                                containerColor = CardDark,
-                                shape = RoundedCornerShape(24.dp)
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(RadiusXL)
                             )
                         }
 
@@ -671,19 +651,13 @@ fun DashboardScreen(
                                 onDismissRequest = { showRenewConfirmation = false },
                                 title = {
                                     Text(
-                                        text = "تأكيد تجديد الباقة الحالية",
-                                        color = GoldGold,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        textAlign = TextAlign.Start
+                                        text = "تأكيد تجديد الباقة",
+                                        fontWeight = FontWeight.Bold
                                     )
                                 },
                                 text = {
                                     Text(
-                                        text = "هل أنت متأكد من رغبتك في تجديد نفس الباقة الحالية: \"${activePlan.planName ?: activePlan.name ?: ""}\"؟ سيتم خصم قيمتها من رصيد محفظتك وتجديدها فوراً.",
-                                        color = TextBody,
-                                        textAlign = TextAlign.Start,
-                                        modifier = Modifier.fillMaxWidth()
+                                        text = "هل تريد تجديد باقة \"${activePlan.planName ?: activePlan.name ?: ""}\"؟ سيتم خصم قيمتها من رصيدك."
                                     )
                                 },
                                 confirmButton = {
@@ -692,41 +666,48 @@ fun DashboardScreen(
                                             showRenewConfirmation = false
                                             onRenewPlan(activePlan.planId ?: 0, activePlan.planType ?: "hotspot")
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = GoldGold, contentColor = BgDark)
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                        )
                                     ) {
-                                        Text("تأكيد التجديد", color = BgDark)
+                                        Text("تأكيد")
                                     }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { showRenewConfirmation = false }) {
-                                        Text("إلغاء", color = TextSecondary)
+                                        Text("إلغاء")
                                     }
-                                }
+                                },
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(RadiusXL)
                             )
                         }
                     } else {
-                        // Empty active plan layout
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, GoldGold.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
-                                .background(CardDark)
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
+                        // Empty state
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            shape = RoundedCornerShape(RadiusXL)
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.CloudOff,
                                     contentDescription = null,
-                                    tint = TextSecondary,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(48.dp)
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = "لا توجد باقة نشطة حالياً. يرجى الاشتراك في إحدى الباقات أدناه.",
+                                    text = "لا توجد باقة نشطة حالياً. يرجى الاشتراك في إحدى الباقات.",
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = TextSecondary,
-                                        lineHeight = 22.sp
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     textAlign = TextAlign.Center
                                 )
@@ -734,66 +715,54 @@ fun DashboardScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // 3. Part 3: Lower Section Control Actions (أزرار التحكم والتفاعل)
+                    // Services Section
                     Text(
                         text = "الخدمات المتاحة",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            color = GoldGold,
                             fontWeight = FontWeight.Bold
                         ),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
                     )
 
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Action 2: Generate Hotspot Voucher (sub_allow_buy_plan & sub_show_plans)
-                        if (currentSub.allowBuyPlan && currentSub.showPlans) {
-                            DashboardActionButton(
-                                title = "إنشاء كروت",
-                                subtitle = "توليد كروت شحن هوتسبوت جديدة من رصيدك",
-                                icon = Icons.Default.ConfirmationNumber,
-                                onClick = onGenerateVoucher,
-                                tag = "action_generate_voucher"
-                            )
-                        }
-
-                        // Action 3: Recharge balance (sub_show_recharge_page)
-                        if (currentSub.showRechargePage) {
-                            DashboardActionButton(
-                                title = "شحن رصيد المحفظة",
-                                subtitle = "تحويل الكاش المباشر لإدارة الشبكة لتفعيل رصيدك",
-                                icon = Icons.Default.AddCard,
-                                onClick = onRecharge,
-                                tag = "action_recharge_screen"
-                            )
-                        }
-
-                        // Action 4: Transaction History
+                    if (currentSub.allowBuyPlan && currentSub.showPlans) {
                         DashboardActionButton(
-                            title = "سجل العمليات واستعادة الكروت",
-                            subtitle = "راجع عمليات الشحن وتوليد الكروت السابقة بكل سهولة",
-                            icon = Icons.Default.History,
-                            onClick = onTransactionsClick,
-                            tag = "action_transactions_screen"
+                            title = "إنشاء كروت",
+                            subtitle = "توليد كروت شحن هوتسبوت جديدة من رصيدك",
+                            icon = Icons.Default.ConfirmationNumber,
+                            onClick = onGenerateVoucher,
+                            tag = "action_generate_voucher"
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    if (currentSub.showRechargePage) {
+                        DashboardActionButton(
+                            title = "شحن رصيد المحفظة",
+                            subtitle = "تحويل الكاش المباشر لإدارة الشبكة",
+                            icon = Icons.Default.AddCard,
+                            onClick = onRecharge,
+                            tag = "action_recharge_screen"
+                        )
+                    }
+
+                    DashboardActionButton(
+                        title = "سجل العمليات",
+                        subtitle = "مراجعة عمليات الشحن وتوليد الكروت السابقة",
+                        icon = Icons.Default.History,
+                        onClick = onTransactionsClick,
+                        tag = "action_transactions_screen"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 
-            // --- BOTTOM SHEET AND OVERLAYS FOR ADDONS ---
+            // Addons Bottom Sheet
             if (showAddonsSheet) {
                 ModalBottomSheet(
                     onDismissRequest = { showAddonsSheet = false },
                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                    containerColor = CardDark,
-                    dragHandle = { BottomSheetDefaults.DragHandle(color = GoldGold.copy(alpha = 0.5f)) }
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)) }
                 ) {
                     Column(
                         modifier = Modifier
@@ -804,7 +773,6 @@ fun DashboardScreen(
                         Text(
                             text = "الباقات الإضافية المتاحة",
                             style = MaterialTheme.typography.titleMedium.copy(
-                                color = GoldGold,
                                 fontWeight = FontWeight.Bold
                             ),
                             modifier = Modifier.padding(16.dp)
@@ -812,29 +780,28 @@ fun DashboardScreen(
 
                         if (isLoadingAddons) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
+                                modifier = Modifier.fillMaxWidth().height(200.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(color = GoldGold)
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             }
                         } else if (addonPlans.isEmpty()) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
+                                modifier = Modifier.fillMaxWidth().height(200.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.Default.Info,
                                         contentDescription = null,
-                                        tint = TextSecondary,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(48.dp)
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("لا توجد باقات إضافية متاحة حالياً", color = TextSecondary)
+                                    Text(
+                                        "لا توجد باقات إضافية متاحة",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                             }
                         } else {
@@ -848,15 +815,16 @@ fun DashboardScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(horizontal = 16.dp, vertical = 6.dp)
-                                            .border(1.dp, GoldGold.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
                                             .testTag("addon_card_${addon.id}"),
-                                        colors = CardDefaults.cardColors(containerColor = BgDark),
-                                        shape = RoundedCornerShape(14.dp)
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                        ),
+                                        shape = RoundedCornerShape(RadiusLG)
                                     ) {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(14.dp)
+                                                .padding(16.dp)
                                         ) {
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
@@ -866,21 +834,20 @@ fun DashboardScreen(
                                                 Text(
                                                     text = addon.name ?: "باقة إضافية",
                                                     style = MaterialTheme.typography.titleMedium.copy(
-                                                        color = GoldGold,
                                                         fontWeight = FontWeight.Bold
                                                     )
                                                 )
                                                 Text(
-                                                    text = com.example.config.AppConfig.formatPriceWithCurrency(addon.price ?: 0.0),
+                                                    text = AppConfig.formatPriceWithCurrency(addon.price ?: 0.0),
                                                     style = MaterialTheme.typography.titleLarge.copy(
-                                                        color = GoldGold,
+                                                        color = MaterialTheme.colorScheme.primary,
                                                         fontWeight = FontWeight.Black
                                                     )
                                                 )
                                             }
-                                            
+
                                             Spacer(modifier = Modifier.height(12.dp))
-                                            
+
                                             val buyAddonEnabled = currentSub.allowBuyAddon
                                             Button(
                                                 onClick = {
@@ -890,18 +857,16 @@ fun DashboardScreen(
                                                 },
                                                 enabled = buyAddonEnabled,
                                                 colors = ButtonDefaults.buttonColors(
-                                                    containerColor = GoldGold,
-                                                    contentColor = BgDark,
-                                                    disabledContainerColor = Color.Gray.copy(alpha = 0.3f),
-                                                    disabledContentColor = Color.LightGray
+                                                    containerColor = MaterialTheme.colorScheme.primary,
+                                                    contentColor = MaterialTheme.colorScheme.onPrimary
                                                 ),
-                                                shape = RoundedCornerShape(12.dp),
+                                                shape = RoundedCornerShape(RadiusMD),
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(44.dp)
                                                     .testTag("addon_buy_button_${addon.id}")
                                             ) {
-                                                Text("إضافة الآن", fontWeight = FontWeight.Bold, color = if (buyAddonEnabled) BgDark else Color.LightGray)
+                                                Text("إضافة الآن", fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     }
@@ -912,25 +877,19 @@ fun DashboardScreen(
                 }
             }
 
-            // Addon confirmation dialog
+            // Addon Confirmation Dialog
             selectedAddonForConfirmation?.let { addon ->
                 AlertDialog(
                     onDismissRequest = { selectedAddonForConfirmation = null },
                     title = {
                         Text(
                             text = "تأكيد إضافة الباقة",
-                            color = GoldGold,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Start
+                            fontWeight = FontWeight.Bold
                         )
                     },
                     text = {
                         Text(
-                            text = "هل تريد إضافة باقة \"${addon.name ?: ""}\" التكميلية وتجميعها مع رصيد باقتك الحالية؟ سيتم خصم ${com.example.config.AppConfig.formatPriceWithCurrency(addon.price ?: 0.0)} من محفظتك.",
-                            color = TextBody,
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier.fillMaxWidth()
+                            text = "هل تريد إضافة باقة \"${addon.name ?: ""}\"؟ سيتم خصم ${AppConfig.formatPriceWithCurrency(addon.price ?: 0.0)} من محفظتك."
                         )
                     },
                     confirmButton = {
@@ -943,10 +902,13 @@ fun DashboardScreen(
                                 showAddonsSheet = false
                                 onBuyAddon(targetId, targetName, targetPrice)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = GoldGold, contentColor = BgDark),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
                             modifier = Modifier.testTag("confirm_addon_buy_button")
                         ) {
-                            Text("تأكيد الإضافة", color = BgDark)
+                            Text("تأكيد الإضافة")
                         }
                     },
                     dismissButton = {
@@ -954,136 +916,45 @@ fun DashboardScreen(
                             onClick = { selectedAddonForConfirmation = null },
                             modifier = Modifier.testTag("cancel_addon_buy_button")
                         ) {
-                            Text("إلغاء", color = TextSecondary)
+                            Text("إلغاء")
                         }
-                    }
+                    },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(RadiusXL)
                 )
             }
 
-            // Full-screen loading spinner overlay for purchase in progress
+            // Full-screen loading overlay
             if (isBuyingAddon) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .clickable(enabled = false) {}, // Disable background interaction
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .clickable(enabled = false) {},
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = GoldGold)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "جاري تفعيل الباقة الإضافية...",
-                            color = GoldGold,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium
+                    Card(
+                        shape = RoundedCornerShape(RadiusXL),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
                         )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "جاري إضافة الباقة...",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun StatRow(label: String, value: String, isHighlight: Boolean = false) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isHighlight) GoldGold.copy(alpha = 0.08f) else Color.Transparent)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = if (isHighlight) GoldGold else TextSecondary,
-                fontWeight = if (isHighlight) FontWeight.Bold else FontWeight.Normal
-            )
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = if (isHighlight) FontWeight.Bold else FontWeight.Normal,
-                color = if (isHighlight) GoldGold else TextBody
-            )
-        )
-    }
-}
-
-@Composable
-fun DashboardActionButton(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    tag: String
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .testTag(tag),
-        colors = CardDefaults.cardColors(containerColor = CardDark),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Main action icon on the right (Start in RTL)
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(GoldGold.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = GoldGold,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Action text labels in the middle
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = TextBody
-                    ),
-                    textAlign = TextAlign.Start
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(color = TextSecondary),
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Disclosure indicator arrow on the left (End in RTL)
-            Icon(
-                imageVector = Icons.Default.ChevronLeft,
-                contentDescription = null,
-                tint = GoldGold,
-                modifier = Modifier.size(24.dp)
-            )
         }
     }
 }

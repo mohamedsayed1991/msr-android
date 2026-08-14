@@ -1,13 +1,13 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,9 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.config.AppConfig
 import com.example.ui.theme.*
 
@@ -48,89 +46,102 @@ fun RechargeScreen(
                     Text(
                         text = "شحن الرصيد",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = GoldGold
+                            fontWeight = FontWeight.Bold
                         )
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("recharge_back_button")) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع", tint = GoldGold)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
-        containerColor = BgDark,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize().testTag("recharge_screen")
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(BgDark)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Header Info Box
+            // Info Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = CardDark),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, GoldGold.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(RadiusXL)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.End
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(RadiusMD))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddCard,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                         Text(
                             text = "شحن رصيد المحفظة عبر تحويل كاش",
                             style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = GoldGold
-                            ),
-                            textAlign = TextAlign.Start
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.Default.AddCard,
-                            contentDescription = null,
-                            tint = GoldGold
+                                fontWeight = FontWeight.Bold
+                            )
                         )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "لإضافة رصيد، قم بتحويل المبلغ المطلوب إلى الرقم التالي وسيصلك الرصيد مباشرة:",
+                        text = "لإضافة رصيد، قم بتحويل المبلغ المطلوب إلى الرقم التالي:",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = TextBody,
-                            lineHeight = 22.sp
-                        ),
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth()
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Copyable Admin Wallet Phone Number Row
+                    // Phone Number Display
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(BgDark)
-                            .border(1.dp, GoldGold, RoundedCornerShape(12.dp))
-                            .padding(12.dp),
+                            .clip(RoundedCornerShape(RadiusLG))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                            .clickable {
+                                if (adminPhone.isNotBlank()) {
+                                    clipboardManager.setText(AnnotatedString(adminPhone))
+                                }
+                            }
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        Text(
+                            text = adminPhone.ifEmpty { "جاري التحميل..." },
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.testTag("admin_phone_text")
+                        )
                         IconButton(
                             onClick = {
                                 if (adminPhone.isNotBlank()) {
@@ -138,127 +149,83 @@ fun RechargeScreen(
                                 }
                             },
                             modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(GoldGold.copy(alpha = 0.15f))
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(RadiusMD))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                 .testTag("copy_admin_phone_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "نسخ رقم المحفظة",
-                                tint = GoldGold,
+                                contentDescription = "نسخ",
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
-
-                        Text(
-                            text = adminPhone.ifEmpty { "جاري التحميل..." },
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                color = GoldGold,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            ),
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier.testTag("admin_phone_text")
-                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // Section 2: Alternative Phone Field
+            // Alternative Phone Section
             Text(
                 text = "هل ستحول من رقم آخر؟",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    color = GoldGold,
                     fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start
+                )
             )
-
-            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "إذا كنت ستستخدم رقم كاش يختلف عن رقمك المسجل لدينا، يجب كتابته هنا والضغط على تأكيد قبل إرسال المبلغ.",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = TextSecondary,
-                    lineHeight = 18.sp
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start
+                text = "إذا كنت ستستخدم رقم كاش يختلف عن رقمك المسجل، اكتب الرقم هنا واضغط تأكيد قبل إرسال المبلغ.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Alternative Phone input
             OutlinedTextField(
                 value = altPhoneInput,
                 onValueChange = { altPhoneInput = it },
                 label = { Text("رقم الكاش الذي ستحول منه") },
-                placeholder = { Text("رقم الكاش الذي ستحول منه") },
+                placeholder = { Text("رقم الكاش") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.PhoneAndroid,
                         contentDescription = null,
-                        tint = GoldGold
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = TextBody,
-                    unfocusedTextColor = TextBody,
-                    focusedBorderColor = GoldGold,
-                    unfocusedBorderColor = GoldGold.copy(alpha = 0.5f),
-                    focusedLabelColor = GoldGold,
-                    unfocusedLabelColor = TextSecondary,
-                    cursorColor = GoldGold
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(RadiusLG),
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("alt_phone_input"),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
-            // Save Alternative phone trigger
             Button(
                 onClick = { onSaveAltPhone(altPhoneInput) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = GoldGold,
-                    contentColor = BgDark
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(RadiusXL),
                 enabled = !isUpdating,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(56.dp)
                     .testTag("save_alt_phone_button")
             ) {
                 if (isUpdating) {
-                    CircularProgressIndicator(color = BgDark, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "تأكيد الرقم قبل التحويل",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = BgDark
-                            )
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = BgDark
-                        )
-                    }
+                    Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("تأكيد الرقم قبل التحويل", fontWeight = FontWeight.Bold)
                 }
             }
         }
