@@ -26,8 +26,11 @@ jobs:
         with:
           gradle-version: '9.5.1'
 
-      - name: Build Debug APK (verbose)
-        run: gradle assembleDebug --no-daemon --stacktrace --info 2>&1 | tail -100
+      - name: Create .env file
+        run: cp .env.example .env
+
+      - name: Build Debug APK
+        run: gradle assembleDebug --no-daemon --stacktrace 2>&1
 
       - name: Upload APK
         if: success()
