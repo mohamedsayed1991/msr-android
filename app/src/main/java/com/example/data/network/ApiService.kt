@@ -17,11 +17,10 @@ import java.util.concurrent.TimeUnit
 interface ApiService {
 
     @GET("/api/subscriber/tenant-info")
-    suspend fun getTenantInfo(): Response<TenantInfoResponse>
-
-    @GET("/api/subscriber/tenant-info")
-    suspend fun getTenantInfoWithTenant(
-        @Query("tenant") tenant: String
+    suspend fun getTenantInfo(
+        @Query("tenant") tenant: String? = null,
+        @Query("user_id") userId: String? = null,
+        @Query("router_id") routerId: String? = null
     ): Response<TenantInfoResponse>
 
     @POST("/api/subscriber/login")
@@ -102,9 +101,28 @@ interface ApiService {
                 level = HttpLoggingInterceptor.Level.BODY
             }
 
+            val dynamicUrlInterceptor = okhttp3.Interceptor { chain ->
+                var request = chain.request()
+                val currentHost = AppConfig.serverIp
+                val currentPort = AppConfig.serverPort
+                if (currentHost.isNotBlank()) {
+                    try {
+                        val newUrl = request.url.newBuilder()
+                            .host(currentHost)
+                            .port(currentPort)
+                            .build()
+                        request = request.newBuilder().url(newUrl).build()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                chain.proceed(request)
+            }
+
             val client = OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
+                .addInterceptor(dynamicUrlInterceptor)
                 .addInterceptor(logging)
                 .build()
 

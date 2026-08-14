@@ -5,13 +5,19 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 
 object AppConfig {
-    const val BASE_URL = "http://13.53.130.231:8080/"
+    var serverIp: String = "13.53.130.231"
+    var serverPort: Int = 8080
+
+    val BASE_URL: String
+        get() = "http://$serverIp:$serverPort/"
     
     // Dynamically updated during auto-discovery, otherwise loaded from preferences
+    var accountId: String = ""
     var tenantUsername: String = ""
     var tenantSystemName: String = "شبكة MSR"
     var walletPhone: String = ""
     var currency: String = "ج.م"
+    var token: String = ""
 
     /**
      * Formatting helper function to strip redundant decimals.

@@ -6,6 +6,9 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class TenantInfoResponse(
     @Json(name = "id") val id: Int? = null,
+    @Json(name = "account_id") val accountId: String? = null,
+    @Json(name = "user_id") val userId: Int? = null,
+    @Json(name = "router_id") val routerId: Int? = null,
     @Json(name = "username") val username: String? = null,
     @Json(name = "system_name") val systemName: String? = null,
     @Json(name = "wallet_phone") val walletPhone: String? = null,
@@ -25,7 +28,8 @@ data class TenantInfoResponse(
 @JsonClass(generateAdapter = true)
 data class LoginRequest(
     @Json(name = "mode") val mode: String = "subscriber",
-    @Json(name = "tenant_username") val tenantUsername: String,
+    @Json(name = "account_id") val accountId: String? = null,
+    @Json(name = "tenant_username") val tenantUsername: String? = null,
     @Json(name = "username") val username: String,
     @Json(name = "password") val password: String
 )
@@ -75,6 +79,7 @@ data class Transaction(
 @JsonClass(generateAdapter = true)
 data class SubscriberInfo(
     @Json(name = "id") val id: Int? = null,
+    @Json(name = "system_name") val systemName: String? = null,
     @Json(name = "username") val username: String? = null,
     @Json(name = "full_name") val fullName: String? = null,
     @Json(name = "balance") val balance: Double? = null,
@@ -138,7 +143,8 @@ data class SubscriberInfo(
 @JsonClass(generateAdapter = true)
 data class LoginResponse(
     @Json(name = "token") val token: String?,
-    @Json(name = "subscriber") val subscriber: SubscriberInfo?
+    @Json(name = "subscriber") val subscriber: SubscriberInfo?,
+    @Json(name = "system_name") val systemName: String? = null
 )
 
 @JsonClass(generateAdapter = true)

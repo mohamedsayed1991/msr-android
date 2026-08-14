@@ -27,8 +27,22 @@ import com.example.ui.theme.TextSecondary
 @Composable
 fun SplashDiscoveryScreen(
     isDiscovering: Boolean,
-    onDiscoveryFinished: () -> Unit
+    onDiscoveryFinished: () -> Unit,
+    onManualAccountSubmit: (String) -> Unit = {}
 ) {
+    var showManualInput by remember { mutableStateOf(false) }
+
+    if (showManualInput) {
+        ManualAccountScreen(
+            onSubmit = { accountId ->
+                onManualAccountSubmit(accountId)
+                showManualInput = false
+            },
+            onBack = { showManualInput = false }
+        )
+        return
+    }
+
     // Pulse animation for logo
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
@@ -72,7 +86,7 @@ fun SplashDiscoveryScreen(
 
             // Subtitle
             Text(
-                text = "نظام إدارة واشتراك المشتركين الذكي",
+                text = "نظام إدارة وااشتراك المشتركين الذكي",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = TextBody,
                     fontWeight = FontWeight.Medium
@@ -113,6 +127,21 @@ fun SplashDiscoveryScreen(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = BgDark
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(
+                    onClick = { showManualInput = true },
+                    modifier = Modifier.testTag("manual_account_button")
+                ) {
+                    Text(
+                        text = "إدخال رقم الحساب يدوياً",
+                        color = GoldGold,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                 }

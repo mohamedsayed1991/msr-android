@@ -14,6 +14,7 @@ import java.net.InetAddress
 class SubscriberRepository(private val context: Context) {
 
     private val apiService = ApiService.create()
+    private val mikrotikApiService = MikrotikApiService.create()
     private val prefs = context.getSharedPreferences("msr_prefs", Context.MODE_PRIVATE)
 
     companion object {
@@ -36,6 +37,9 @@ class SubscriberRepository(private val context: Context) {
 
     init {
         // Load configurations into AppConfig memory from SharedPreferences
+        AppConfig.serverIp = prefs.getString("server_ip", "13.53.130.231") ?: "13.53.130.231"
+        AppConfig.serverPort = prefs.getInt("server_port", 8080)
+        AppConfig.accountId = prefs.getString("account_id", "") ?: ""
         AppConfig.tenantUsername = prefs.getString(KEY_TENANT_USERNAME, "") ?: ""
         AppConfig.tenantSystemName = prefs.getString(KEY_TENANT_SYSTEM_NAME, "شبكة MSR") ?: "شبكة MSR"
         AppConfig.walletPhone = prefs.getString(KEY_WALLET_PHONE, "") ?: ""
@@ -43,17 +47,76 @@ class SubscriberRepository(private val context: Context) {
     }
 
     /**
-     * Tries to discover Tenant info via direct HTTP GET
+     * Reads tenant info from local MikroTik (192.168.88.1/tenant-info.json)
      */
-    suspend fun autoDiscoverTenant(): TenantInfoResponse? = withContext(Dispatchers.IO) {
+    suspend fun autoDetectFromMikrotik(): TenantInfoResponse? = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getTenantInfo()
+            val response = mikrotikApiService.getMikrotikTenantInfo()
             if (response.isSuccessful && response.body() != null) {
-                val data = response.body()!!
-                if (!data.username.isNullOrBlank()) {
-                    saveTenantInfo(data)
-                    return@withContext data
+                val mikrotikData = response.body()!!
+                
+                // Update server IP & Port if provided by Mikrotik JSON
+                mikrotikData.serverIp?.takeIf { it.isNotBlank() }?.let { ip ->
+                    AppConfig.serverIp = ip
+                    prefs.edit().putString("server_ip", ip).apply()
                 }
+                mikrotikData.serverPort?.let { port ->
+                    AppConfig.serverPort = port
+                    prefs.edit().putInt("server_port", port).apply()
+                }
+
+                val accountId = mikrotikData.accountId
+                if (!accountId.isNullOrBlank()) {
+                    AppConfig.accountId = accountId
+                    prefs.edit().putString("account_id", accountId).apply()
+                    
+                    val parts = accountId.split("_")
+                    if (parts.size == 2) {
+                        try {
+                            val serverResp = apiService.getTenantInfo(
+                                userId = parts[0],
+                                routerId = parts[1]
+                            )
+                            if (serverResp.isSuccessful && serverResp.body() != null) {
+                                val serverData = serverResp.body()!!
+                                if (!serverData.username.isNullOrBlank() || !serverData.accountId.isNullOrBlank()) {
+                                    saveTenantInfo(serverData)
+                                    return@withContext serverData
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+                val tenantUsername = mikrotikData.username
+                if (!tenantUsername.isNullOrBlank()) {
+                    try {
+                        val serverResp = apiService.getTenantInfo(tenant = tenantUsername)
+                        if (serverResp.isSuccessful && serverResp.body() != null) {
+                            val serverData = serverResp.body()!!
+                            if (!serverData.username.isNullOrBlank() || !serverData.accountId.isNullOrBlank()) {
+                                saveTenantInfo(serverData)
+                                return@withContext serverData
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                // Fallback to local Mikrotik data if main server query fails
+                val fallbackTenant = TenantInfoResponse(
+                    id = mikrotikData.tenantId,
+                    accountId = mikrotikData.accountId,
+                    userId = mikrotikData.userId,
+                    routerId = mikrotikData.routerId,
+                    username = mikrotikData.username,
+                    systemName = mikrotikData.systemName ?: "شبكة MSR"
+                )
+                saveTenantInfo(fallbackTenant)
+                return@withContext fallbackTenant
             }
             null
         } catch (e: Exception) {
@@ -63,52 +126,98 @@ class SubscriberRepository(private val context: Context) {
     }
 
     /**
-     * Auto-detect tenant from MikroTik's local API (192.168.88.1)
-     * This is the PRIMARY method - works when user is on WiFi
+     * Tries to discover Tenant info via Mikrotik hotspot then direct HTTP GET
      */
-    suspend fun autoDetectFromMikrotik(): TenantInfoResponse? = withContext(Dispatchers.IO) {
+    suspend fun autoDiscoverTenant(): TenantInfoResponse? = withContext(Dispatchers.IO) {
+        // Step 1: Try Mikrotik auto-detection from 192.168.88.1/tenant-info.json
+        val mikrotikTenant = autoDetectFromMikrotik()
+        if (mikrotikTenant != null) {
+            return@withContext mikrotikTenant
+        }
+
+        // Step 2: Direct server GET /api/subscriber/tenant-info
         try {
-            val mikrotikApi = MikrotikApiService()
-            val mikrotikInfo = mikrotikApi.getMikrotikTenantInfo()
-
-            if (mikrotikInfo != null) {
-                saveTenantUsername(mikrotikInfo.username)
-
-                val response = apiService.getTenantInfoWithTenant(mikrotikInfo.username)
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    saveTenantInfo(body)
-                    return@withContext body
+            val response = apiService.getTenantInfo()
+            if (response.isSuccessful && response.body() != null) {
+                val data = response.body()!!
+                if (!data.username.isNullOrBlank() || !data.accountId.isNullOrBlank()) {
+                    saveTenantInfo(data)
+                    return@withContext data
                 }
             }
-
-            val savedUsername = getSavedTenantUsername()
-            if (savedUsername.isNotEmpty()) {
-                val response = apiService.getTenantInfoWithTenant(savedUsername)
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    saveTenantInfo(body)
-                    return@withContext body
-                }
-            }
-
-            null
         } catch (e: Exception) {
             e.printStackTrace()
-            null
         }
+
+        // Step 3: Try server tenant-info with saved tenant username
+        val savedUsername = getSavedTenantUsername()
+        if (savedUsername.isNotBlank()) {
+            try {
+                val response = apiService.getTenantInfo(tenant = savedUsername)
+                if (response.isSuccessful && response.body() != null) {
+                    val data = response.body()!!
+                    if (!data.username.isNullOrBlank() || !data.accountId.isNullOrBlank()) {
+                        saveTenantInfo(data)
+                        return@withContext data
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Step 4: Try account_id from SharedPreferences
+        val savedAccountId = prefs.getString("account_id", "") ?: ""
+        if (savedAccountId.isNotBlank()) {
+            val parts = savedAccountId.split("_")
+            if (parts.size == 2) {
+                try {
+                    val response = apiService.getTenantInfo(
+                        userId = parts[0],
+                        routerId = parts[1]
+                    )
+                    if (response.isSuccessful && response.body() != null) {
+                        val data = response.body()!!
+                        if (!data.username.isNullOrBlank() || !data.accountId.isNullOrBlank()) {
+                            saveTenantInfo(data)
+                            return@withContext data
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        null
     }
 
-    private fun saveTenantUsername(username: String) {
-        prefs.edit().putString(KEY_TENANT_USERNAME, username).apply()
+    fun clearSubscriberSession() {
+        AppConfig.token = ""
+        clearSession()
     }
 
     fun saveTenantInfo(data: TenantInfoResponse) {
         val id = data.id ?: 0
+        val accountId = data.accountId?.takeIf { it.isNotBlank() }
+            ?: if (data.userId != null && data.routerId != null) "${data.userId}_${data.routerId}" else ""
         val username = data.username ?: ""
         val systemName = data.systemName ?: "شبكة MSR"
         val walletPhone = data.extractWalletPhone() ?: data.walletPhone ?: ""
         val currency = data.currency ?: "ج.م"
+
+        val currentSavedAccountId = prefs.getString("account_id", "") ?: ""
+        val currentSavedUsername = prefs.getString(KEY_TENANT_USERNAME, "") ?: ""
+
+        if ((accountId.isNotBlank() && accountId != currentSavedAccountId) ||
+            (username.isNotBlank() && username != currentSavedUsername && currentSavedUsername.isNotBlank())) {
+            clearSubscriberSession()
+        }
+
+        if (accountId.isNotBlank()) {
+            AppConfig.accountId = accountId
+            prefs.edit().putString("account_id", accountId).apply()
+        }
 
         AppConfig.tenantUsername = username
         AppConfig.tenantSystemName = systemName
@@ -121,6 +230,7 @@ class SubscriberRepository(private val context: Context) {
 
         prefs.edit().apply {
             putInt(KEY_TENANT_ID, id)
+            if (accountId.isNotBlank()) putString("account_id", accountId)
             putString(KEY_TENANT_USERNAME, username)
             putString(KEY_TENANT_SYSTEM_NAME, systemName)
             if (walletPhone.isNotBlank()) putString(KEY_WALLET_PHONE, walletPhone)
@@ -129,11 +239,18 @@ class SubscriberRepository(private val context: Context) {
         }
     }
 
+    fun saveSystemName(name: String) {
+        AppConfig.tenantSystemName = name
+        prefs.edit().putString(KEY_TENANT_SYSTEM_NAME, name).apply()
+    }
+
     fun clearTenantInfo() {
+        AppConfig.accountId = ""
         AppConfig.tenantUsername = ""
         AppConfig.tenantSystemName = "شبكة MSR"
         prefs.edit().apply {
             remove(KEY_TENANT_ID)
+            remove("account_id")
             remove(KEY_TENANT_USERNAME)
             remove(KEY_TENANT_SYSTEM_NAME)
             apply()
@@ -142,20 +259,20 @@ class SubscriberRepository(private val context: Context) {
 
     private fun getSavedTenantInfoAsResponse(): TenantInfoResponse {
         var savedUsername = prefs.getString(KEY_TENANT_USERNAME, "") ?: ""
+        var savedAccountId = prefs.getString("account_id", "") ?: ""
         var savedSystemName = prefs.getString(KEY_TENANT_SYSTEM_NAME, "شبكة MSR") ?: "شبكة MSR"
         var savedWalletPhone = prefs.getString(KEY_WALLET_PHONE, "") ?: ""
         var savedCurrency = prefs.getString("currency", "ج.م") ?: "ج.م"
         val savedId = prefs.getInt(KEY_TENANT_ID, 0)
 
-        // Fallback for first time on 4G if nothing is saved
-        if (savedUsername.isEmpty()) {
-            savedUsername = "mmm123"
+        if (savedUsername.isEmpty() && savedAccountId.isEmpty()) {
+            savedUsername = ""
             savedSystemName = "شبكة MSR"
             savedWalletPhone = prefs.getString(KEY_WALLET_PHONE, "") ?: ""
             savedCurrency = "ج.م"
         }
 
-        // Apply back to memory Config
+        AppConfig.accountId = savedAccountId
         AppConfig.tenantUsername = savedUsername
         AppConfig.tenantSystemName = savedSystemName
         AppConfig.walletPhone = savedWalletPhone
@@ -163,11 +280,48 @@ class SubscriberRepository(private val context: Context) {
 
         return TenantInfoResponse(
             id = savedId,
+            accountId = savedAccountId,
             username = savedUsername,
             systemName = savedSystemName,
             walletPhone = savedWalletPhone,
             currency = savedCurrency
         )
+    }
+
+    fun getSavedAccountId(): String = prefs.getString("account_id", "") ?: ""
+
+    fun saveAccountId(accountId: String) {
+        AppConfig.accountId = accountId
+        prefs.edit().putString("account_id", accountId).apply()
+    }
+
+    suspend fun getTenantInfoByAccountId(accountId: String): TenantInfoResponse? = withContext(Dispatchers.IO) {
+        val currentSavedAccountId = prefs.getString("account_id", "") ?: ""
+        if (accountId.isNotBlank() && accountId != currentSavedAccountId) {
+            clearSubscriberSession()
+        }
+        val parts = accountId.split("_")
+        if (parts.size == 2) {
+            try {
+                val response = apiService.getTenantInfo(
+                    userId = parts[0],
+                    routerId = parts[1]
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    val data = response.body()!!
+                    saveTenantInfo(data)
+                    return@withContext data
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        val fallback = TenantInfoResponse(
+            accountId = accountId,
+            systemName = "شبكة MSR"
+        )
+        saveTenantInfo(fallback)
+        fallback
     }
 
     fun getSavedTenantUsername(): String = prefs.getString(KEY_TENANT_USERNAME, "") ?: ""
@@ -176,11 +330,13 @@ class SubscriberRepository(private val context: Context) {
 
     // Token
     fun saveToken(token: String) {
+        AppConfig.token = token
         prefs.edit().putString(KEY_TOKEN, token).apply()
     }
 
     fun getToken(): String? {
-        return prefs.getString(KEY_TOKEN, null)
+        val t = AppConfig.token.ifEmpty { prefs.getString(KEY_TOKEN, null) }
+        return if (t.isNullOrEmpty()) null else t
     }
 
     fun clearSession() {
@@ -197,6 +353,11 @@ class SubscriberRepository(private val context: Context) {
             remove("sub_show_recharge_page")
             remove("sub_show_plans")
             remove("sub_show_addons")
+            // مسح بيانات الشبكة القديمة عند تسجيل الخروج
+            remove("account_id")
+            remove(KEY_TENANT_USERNAME)
+            remove(KEY_TENANT_SYSTEM_NAME)
+            remove(KEY_WALLET_PHONE)
             apply()
         }
     }
@@ -427,7 +588,11 @@ class SubscriberRepository(private val context: Context) {
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 body.token?.let { saveToken(it) }
-                body.subscriber?.let { saveSubscriberInfo(it) }
+                body.systemName?.let { saveSystemName(it) }
+                body.subscriber?.let { 
+                    saveSubscriberInfo(it)
+                    it.systemName?.let { name -> saveSystemName(name) }
+                }
                 Result.success(body)
             } else {
                 val errorMsg = response.errorBody()?.string() ?: "فشل تسجيل الدخول"
@@ -618,6 +783,7 @@ class SubscriberRepository(private val context: Context) {
             val response = apiService.getMe("Bearer $token")
             if (response.isSuccessful && response.body() != null) {
                 val info = response.body()!!
+                info.systemName?.let { saveSystemName(it) }
                 val phone = info.extractWalletPhone()
                 if (!phone.isNullOrBlank()) {
                     saveWalletPhone(phone)

@@ -187,17 +187,15 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
     fun runAutoDiscovery(onFinished: () -> Unit) {
         viewModelScope.launch {
             _isDiscovering.value = true
-
-            // Step 1: Try to detect from MikroTik local API (WiFi)
-            var tenantInfo = repository.autoDetectFromMikrotik()
-
-            // Step 2: Fallback to regular discovery
-            if (tenantInfo == null) {
-                tenantInfo = repository.autoDiscoverTenant()
-            }
-
+            val tenantInfo = repository.autoDiscoverTenant()
             if (tenantInfo != null) {
                 _isOnline.value = true
+                tenantInfo.accountId?.let { id ->
+                    if (id.isNotBlank()) {
+                        AppConfig.accountId = id
+                        repository.saveAccountId(id)
+                    }
+                }
                 val sysName = tenantInfo.systemName ?: AppConfig.tenantSystemName
                 val usrName = tenantInfo.username ?: AppConfig.tenantUsername
                 _tenantSystemName.value = sysName
@@ -207,8 +205,10 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
                 }
             } else {
                 _isOnline.value = false
+                val savedAccountId = repository.getSavedAccountId()
                 val savedUsername = repository.getSavedTenantUsername()
-                if (savedUsername.isNotEmpty()) {
+                if (savedAccountId.isNotEmpty() || savedUsername.isNotEmpty()) {
+                    AppConfig.accountId = savedAccountId
                     AppConfig.tenantUsername = savedUsername
                     AppConfig.tenantSystemName = repository.getSavedTenantSystemName()
                     AppConfig.walletPhone = repository.getSavedWalletPhone()
@@ -216,17 +216,41 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
                     _tenantUsername.value = AppConfig.tenantUsername
                     _toastEvent.emit("تعذر الاتصال بالشبكة المحلية. تم استخدام الإعدادات المحفوظة: ${AppConfig.tenantSystemName}")
                 } else {
-                    AppConfig.tenantUsername = "mmm123"
                     AppConfig.tenantSystemName = "شبكة MSR"
                     _tenantSystemName.value = AppConfig.tenantSystemName
-                    _tenantUsername.value = AppConfig.tenantUsername
-                    _toastEvent.emit("تعذر اكتشاف الشبكة تلقائياً. يرجى التحقق من اتصالك بالشبكة المحلية")
+                    _tenantUsername.value = ""
+                    _toastEvent.emit("تعذر اكتشاف الشبكة. تأكد من اتصالك بالشبكة المحلية")
                 }
             }
             loadWalletPhone()
             _isDiscovering.value = false
             _discoveryCompleted.value = true
             onFinished()
+        }
+    }
+
+    /**
+     * Set Account ID manually if auto discovery failed
+     */
+    fun setManualAccountId(accountIdInput: String, onSuccess: () -> Unit) {
+        val trimmed = accountIdInput.trim()
+        if (trimmed.isEmpty()) {
+            viewModelScope.launch { _toastEvent.emit("يرجى إدخال رقم الحساب") }
+            return
+        }
+        viewModelScope.launch {
+            _isDiscovering.value = true
+            val info = repository.getTenantInfoByAccountId(trimmed)
+            if (info != null) {
+                _tenantSystemName.value = info.systemName ?: "شبكة MSR"
+                _tenantUsername.value = info.username ?: ""
+                _toastEvent.emit("تم التعرف على الشبكة بنجاح")
+            } else {
+                repository.saveAccountId(trimmed)
+                _toastEvent.emit("تم حفظ رقم الحساب: $trimmed")
+            }
+            _isDiscovering.value = false
+            onSuccess()
         }
     }
 
@@ -241,13 +265,23 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
 
         viewModelScope.launch {
             _isLoggingIn.value = true
-            val activeTenantUsername = AppConfig.tenantUsername.ifBlank {
-                repository.getSavedTenantUsername().ifBlank { "mmm123" }
+            val activeAccountId = AppConfig.accountId.ifBlank {
+                repository.getSavedAccountId()
             }
-            AppConfig.tenantUsername = activeTenantUsername
+            val activeTenantUsername = AppConfig.tenantUsername.ifBlank {
+                repository.getSavedTenantUsername()
+            }
+            if (activeAccountId.isBlank() && activeTenantUsername.isBlank()) {
+                _toastEvent.emit("لم يتم التعرف على الشبكة. يرجى إدخال رقم الحساب أولاً")
+                _isLoggingIn.value = false
+                return@launch
+            }
+            if (activeAccountId.isNotBlank()) AppConfig.accountId = activeAccountId
+            if (activeTenantUsername.isNotBlank()) AppConfig.tenantUsername = activeTenantUsername
 
             val req = LoginRequest(
-                tenantUsername = activeTenantUsername,
+                accountId = activeAccountId.ifBlank { null },
+                tenantUsername = activeTenantUsername.ifBlank { null },
                 username = usernameInput.trim(),
                 password = passwordInput.trim()
             )
@@ -259,6 +293,10 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
                     _isOnline.value = true
                     res.subscriber?.extractWalletPhone()?.let { phone ->
                         _walletPhone.value = phone
+                    }
+                    res.systemName?.let { name ->
+                        repository.saveSystemName(name)
+                        _tenantSystemName.value = name
                     }
                     _toastEvent.emit("تم تسجيل الدخول بنجاح")
                     onSuccess()
@@ -283,7 +321,7 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
 
         viewModelScope.launch {
             _isCheckingVoucher.value = true
-            val tenant = AppConfig.tenantUsername.ifEmpty { "mmm123" }
+            val tenant = AppConfig.tenantUsername.ifEmpty { AppConfig.accountId }
             val result = repository.getVoucherInfo(code.trim(), tenant)
             result.fold(
                 onSuccess = { response ->
@@ -317,6 +355,10 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
                     _subscriberInfo.value = info
                     info.extractWalletPhone()?.let { phone ->
                         _walletPhone.value = phone
+                    }
+                    info.systemName?.let { name ->
+                        repository.saveSystemName(name)
+                        _tenantSystemName.value = name
                     }
                     _isOnline.value = true
                 },
@@ -450,7 +492,7 @@ class SubscriberViewModel(application: Application) : AndroidViewModel(applicati
             } else {
                 planType
             }
-            val result = repository.buyPlan(plan.id, AppConfig.tenantUsername.ifEmpty { "mmm123" }, resolvedPlanType)
+            val result = repository.buyPlan(plan.id, AppConfig.tenantUsername.ifEmpty { AppConfig.accountId }, resolvedPlanType)
             result.fold(
                 onSuccess = { response ->
                     val rawCode = response.displayVoucherCode ?: run {

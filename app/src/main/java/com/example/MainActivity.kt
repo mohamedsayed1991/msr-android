@@ -146,6 +146,19 @@ fun MsrAppNavigation(viewModel: SubscriberViewModel = viewModel()) {
                             popUpTo(ROUTE_SPLASH) { inclusive = true }
                         }
                     }
+                },
+                onManualAccountSubmit = { accountId ->
+                    viewModel.setManualAccountId(accountId, onSuccess = {
+                        if (isAuthenticated) {
+                            navController.navigate(ROUTE_DASHBOARD) {
+                                popUpTo(ROUTE_SPLASH) { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(ROUTE_LOGIN) {
+                                popUpTo(ROUTE_SPLASH) { inclusive = true }
+                            }
+                        }
+                    })
                 }
             )
         }

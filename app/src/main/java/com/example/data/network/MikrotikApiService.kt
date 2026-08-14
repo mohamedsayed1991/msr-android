@@ -1,30 +1,40 @@
 package com.example.data.network
 
 import com.example.data.model.MikrotikTenantInfo
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.http.GET
+import java.util.concurrent.TimeUnit
 
-class MikrotikApiService {
+interface MikrotikApiService {
 
-    private val MIKROTIK_IP = "192.168.88.1"
-    private val MIKROTIK_PORT = 8728
+    @GET("tenant-info.json")
+    suspend fun getMikrotikTenantInfo(): Response<MikrotikTenantInfo>
 
-    fun getMikrotikTenantInfo(): MikrotikTenantInfo? {
-        return try {
-            val api = RouterOsApi(MIKROTIK_IP, MIKROTIK_PORT)
-            val systemName = api.getSystemIdentity()
+    companion object {
+        private const val MIKROTIK_BASE_URL = "http://192.168.88.1/"
 
-            if (!systemName.isNullOrBlank()) {
-                MikrotikTenantInfo(
-                    tenant_id = 0,
-                    username = systemName,
-                    system_name = systemName,
-                    server_ip = MIKROTIK_IP,
-                    server_port = MIKROTIK_PORT
-                )
-            } else {
-                null
+        fun create(): MikrotikApiService {
+            val logging = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
             }
-        } catch (e: Exception) {
-            null
+
+            val client = OkHttpClient.Builder()
+                .connectTimeout(3, TimeUnit.SECONDS)
+                .readTimeout(3, TimeUnit.SECONDS)
+                .addInterceptor(logging)
+                .build()
+
+            val retrofit = Retrofit.Builder()
+                .baseUrl(MIKROTIK_BASE_URL)
+                .client(client)
+                .addConverterFactory(MoshiConverterFactory.create())
+                .build()
+
+            return retrofit.create(MikrotikApiService::class.java)
         }
     }
 }
