@@ -26,9 +26,6 @@ jobs:
         with:
           gradle-version: '9.5.1'
 
-      - name: Create .env file
-        run: cp .env.example .env
-
       - name: Build Debug APK
         run: gradle assembleDebug --no-daemon --stacktrace 2>&1
 
