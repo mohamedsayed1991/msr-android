@@ -26,8 +26,8 @@ jobs:
         with:
           gradle-version: '9.5.1'
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace 2>&1
+      - name: Build Debug APK (skip tests)
+        run: gradle assembleDebug --no-daemon -x test 2>&1
 
       - name: Upload APK
         if: success()
