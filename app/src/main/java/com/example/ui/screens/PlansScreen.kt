@@ -407,14 +407,16 @@ fun VoucherBottomSheetScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             Card(
+                onClick = {},
+                enabled = false,
                 shape = RoundedCornerShape(topStart = RadiusXL, topEnd = RadiusXL),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.85f)
-                    .clickable(enabled = false) { }
                     .testTag("voucher_bottom_sheet")
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {

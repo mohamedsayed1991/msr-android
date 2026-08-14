@@ -169,6 +169,7 @@ fun MsrAppNavigation(viewModel: SubscriberViewModel = viewModel()) {
                     val isLoggingIn by viewModel.isLoggingIn.collectAsState()
                     val isCheckingVoucher by viewModel.isCheckingVoucher.collectAsState()
                     val tenantSystemName by viewModel.tenantSystemName.collectAsState()
+                    val themeMode by viewModel.themeMode.collectAsState()
 
                     LoginScreen(
                         isLoggingIn = isLoggingIn,
@@ -199,6 +200,7 @@ fun MsrAppNavigation(viewModel: SubscriberViewModel = viewModel()) {
                     val addonPlans by viewModel.addonPlans.collectAsState()
                     val isLoadingAddons by viewModel.isLoadingAddons.collectAsState()
                     val isBuyingAddon by viewModel.isBuyingAddon.collectAsState()
+                    val themeMode by viewModel.themeMode.collectAsState()
 
                     LaunchedEffect(Unit) {
                         viewModel.refreshMe()

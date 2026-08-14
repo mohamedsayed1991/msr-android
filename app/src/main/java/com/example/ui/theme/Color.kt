@@ -50,10 +50,10 @@ val SuccessGreen = Color(0xFF34D399)
 val ErrorRed = Color(0xFFFB7185)
 val WarningAmber = Color(0xFFFBBF24)
 
-// Design Tokens
-val RadiusXL = 20.dp
-val RadiusLG = 14.dp
-val RadiusMD = 10.dp
+// Shared Design Tokens (Radii mapped to dp)
+val RadiusXL = 16.dp
+val RadiusLG = 12.dp
+val RadiusMD = 8.dp
 val RadiusSM = 6.dp
 
 // Legacy Composable Aliases (for backward compatibility)
