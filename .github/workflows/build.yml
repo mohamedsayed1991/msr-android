@@ -27,10 +27,7 @@ jobs:
           gradle-version: '9.5.1'
 
       - name: Build Debug APK
-        uses: gradle/actions/build-gradle@v4
-        with:
-          gradle-version: '9.5.1'
-          arguments: assembleDebug -x test
+        run: gradle assembleDebug -x test
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
