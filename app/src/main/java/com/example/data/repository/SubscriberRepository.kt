@@ -7,6 +7,7 @@ import com.example.data.network.ApiService
 import com.example.data.network.MikrotikApiService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
@@ -397,7 +398,7 @@ class SubscriberRepository(private val context: Context) {
 
             info.transactions?.let { txns ->
                 try {
-                    val moshi = Moshi.Builder().build()
+                    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
                     val type = Types.newParameterizedType(List::class.java, Transaction::class.java)
                     val adapter = moshi.adapter<List<Transaction>>(type)
                     putString(KEY_TRANSACTIONS, adapter.toJson(txns))
@@ -427,7 +428,7 @@ class SubscriberRepository(private val context: Context) {
         val txnsJson = prefs.getString(KEY_TRANSACTIONS, null)
         val transactionsList = if (txnsJson != null) {
             try {
-                val moshi = Moshi.Builder().build()
+                val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
                 val type = Types.newParameterizedType(List::class.java, Transaction::class.java)
                 val adapter = moshi.adapter<List<Transaction>>(type)
                 adapter.fromJson(txnsJson)

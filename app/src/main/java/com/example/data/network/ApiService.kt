@@ -2,6 +2,8 @@ package com.example.data.network
 
 import com.example.config.AppConfig
 import com.example.data.model.*
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
@@ -126,10 +128,14 @@ interface ApiService {
                 .addInterceptor(logging)
                 .build()
 
+            val moshi = Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .build()
+
             val retrofit = Retrofit.Builder()
                 .baseUrl(AppConfig.BASE_URL)
                 .client(client)
-                .addConverterFactory(MoshiConverterFactory.create())
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
                 .build()
 
             return retrofit.create(ApiService::class.java)
