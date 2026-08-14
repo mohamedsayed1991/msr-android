@@ -26,11 +26,13 @@ jobs:
         with:
           gradle-version: '9.5.1'
 
-      - name: Build Debug APK (skip tests)
-        run: gradle assembleDebug --no-daemon -x test 2>&1
+      - name: Build Debug APK
+        uses: gradle/actions/build-gradle@v4
+        with:
+          gradle-version: '9.5.1'
+          arguments: assembleDebug -x test
 
       - name: Upload APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: msr-debug-apk
