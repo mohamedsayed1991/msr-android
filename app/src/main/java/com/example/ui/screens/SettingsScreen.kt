@@ -120,7 +120,7 @@ fun SettingsScreen(
                 Column {
                     // Theme toggle
                     SettingsItem(
-                        icon = Icons.Outlined.DarkMode,
+                        icon = Icons.Filled.DarkMode,
                         title = "المظهر",
                         subtitle = themeLabel,
                         onClick = onToggleTheme
@@ -154,7 +154,7 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.outline
                     )
                     SettingsItem(
-                        icon = Icons.Outlined.Copyright,
+                        icon = Icons.Outlined.Info,
                         title = "MSR Systems",
                         subtitle = "نظام إدارة واشتراك المشتركين",
                         onClick = {}
@@ -238,7 +238,7 @@ fun SettingsItem(
             )
         }
         Icon(
-            imageVector = Icons.Default.ChevronLeft,
+            imageVector = Icons.Default.KeyboardArrowLeft,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)

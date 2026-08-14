@@ -240,7 +240,7 @@ fun DashboardActionButton(
                 )
             }
             Icon(
-                imageVector = Icons.Default.ChevronLeft,
+                imageVector = Icons.Default.KeyboardArrowLeft,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
